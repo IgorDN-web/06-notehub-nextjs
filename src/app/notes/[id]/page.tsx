@@ -1,6 +1,12 @@
 import NoteDetailsClient from './NoteDetails.client';
 
-export default function NotePage({ params }: { params: { id: string } }) {
+type PageProps = {
+  params: {
+    id: string
+  }
+}
+
+export default function NotePage({ params }: PageProps) {
   const noteId = Number(params.id);
   return <NoteDetailsClient noteId={noteId} />;
 }
