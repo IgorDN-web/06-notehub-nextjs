@@ -1,10 +1,15 @@
+import React from 'react';
 import NoteDetailsClient from './NoteDetails.client';
 
-interface Props {
-  params: { id: string };
-}
+type Params = {
+  id: string;
+};
 
-export default function NotePage({ params }: Props) {
+type PageProps = {
+  params: Params;
+};
+
+export default function NotePage({ params }: PageProps): React.ReactElement {
   const noteId = Number(params.id);
   return <NoteDetailsClient noteId={noteId} />;
 }
