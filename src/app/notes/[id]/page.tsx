@@ -1,15 +1,11 @@
-import React from 'react';
 import NoteDetailsClient from './NoteDetails.client';
 
-type Params = {
-  id: string;
-};
-
 type PageProps = {
-  params: Params;
-};
+  params: { id: string } | Promise<{ id: string }>
+}
 
-export default function NotePage({ params }: PageProps): React.ReactElement {
-  const noteId = Number(params.id);
+export default async function NotePage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const noteId = Number(resolvedParams.id);
   return <NoteDetailsClient noteId={noteId} />;
 }
