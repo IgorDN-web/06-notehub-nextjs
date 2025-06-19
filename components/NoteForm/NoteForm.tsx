@@ -13,7 +13,7 @@ const validationSchema = Yup.object().shape({
     .required("Title is required!"),
   content: Yup.string().max(500),
   tag: Yup.string()
-    .oneOf(["Work", "Personal", "Meeting", "Shopping", "Todo"])
+    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required("Tag is required!"),
 });
 
