@@ -1,32 +1,90 @@
-import axios from 'axios';
-import { Note } from '../types/note';
+import axios from "axios";
+import type { Note, CreateNoteValues } from "../types/note";
+import toast from "react-hot-toast";
 
-const BASE_URL = 'https://next-docs-api.onrender.com';
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+axios.defaults.baseURL = "https://notehub-public.goit.study/api";
 
-const instance = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    Authorization: `Bearer ${TOKEN}`,
-    'Content-Type': 'application/json',
-  },
-});
+interface FetchNotesValues {
+  notes: Note[];
+  totalPages: number;
+}
 
-export const fetchNotes = async (query: string = ''): Promise<Note[]> => {
-  const { data } = await instance.get(`/notes?q=${query}`);
-  return data;
-};
+interface ParamsTypes {
+  page: number;
+  perPage: number;
+  search?: string;
+}
 
-export const fetchNoteById = async (id: number): Promise<Note> => {
-  const { data } = await instance.get(`/notes/${id}`);
-  return data;
-};
+export async function fetchNotes(
+  search: string,
+  page: number
+): Promise<FetchNotesValues | undefined> {
+  try {
+    const perPage = 12;
+    const params: ParamsTypes = {
+      page,
+      perPage,
+    };
+    if (search?.trim()) {
+      params.search = search;
+    }
+    const res = await axios.get<FetchNotesValues>("/notes", {
+      params,
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : String(error));
+  }
+}
 
-export const addNote = async (note: Omit<Note, 'id' | 'createdAt'>) => {
-  const { data } = await instance.post('/notes', note);
-  return data;
-};
+export async function createNote({
+  title,
+  content,
+  tag,
+}: CreateNoteValues): Promise<Note | undefined> {
+  try {
+    const params: CreateNoteValues = {
+      title,
+      content,
+      tag,
+    };
 
-export const deleteNote = async (id: number) => {
-  await instance.delete(`/notes/${id}`);
-};
+    const res = await axios.post<Note>("/notes", params, {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : String(error));
+  }
+}
+
+export async function deleteNote(id: number): Promise<Note | undefined> {
+  try {
+    const res = await axios.delete<Note>(`/notes/${id}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : String(error));
+  }
+}
+
+export default async function fetchNoteId(id: number) {
+  try {
+    const res = await axios(`notes/${id}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : String(error));
+  }
+}

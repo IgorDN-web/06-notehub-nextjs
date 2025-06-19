@@ -1,33 +1,40 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { fetchNoteById } from '@/lib/api/api';
-import { useEffect } from 'react';
-import css from './NoteDetails.client.module.css';
+import fetchNoteId from "@/lib/api";
+import Loader from "@/app/loading";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import ErrorMessage from "../error";
+import css from "./NoteDetails.module.css";
 
-export default function NoteDetailsClient({ id }: { id: number }) {
-  const { data: note, isLoading, error } = useQuery({
-    queryKey: ['note', id],
-    queryFn: () => fetchNoteById(id),
+export default function NoteDetailsClient() {
+  const { id } = useParams<{ id: string }>();
+  const noteId = +id;
+  const {
+    data: note,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["notes", noteId],
+    queryFn: () => fetchNoteId(noteId),
+    refetchOnMount: false,
   });
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  if (isLoading) return <p>Loading, please wait...</p>;
-  if (error || !note) return <p>Something went wrong.</p>;
-
   return (
-    <div className={css.container}>
-      <div className={css.item}>
-        <div className={css.header}>
-          <h2>{note.title}</h2>
-          <button className={css.editBtn}>Edit note</button>
+    <>
+      {isLoading && <Loader />}
+      {isError && !note && <ErrorMessage message={error.message} />}
+      <div className={css.container}>
+        <div className={css.item}>
+          <div className={css.header}>
+            <h2>{note.title}</h2>
+            <button className={css.editBtn}>Edit note</button>
+          </div>
+          <p className={css.content}>{note.content}</p>
+          <p className={css.date}>Created date: {note.createdAt}</p>
         </div>
-        <p className={css.content}>{note.content}</p>
-        <p className={css.date}>{new Date(note.createdAt).toLocaleDateString()}</p>
       </div>
-    </div>
+    </>
   );
 }
