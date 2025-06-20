@@ -2,15 +2,15 @@
 
 import css from "./error.module.css";
 
-interface ErrorMessageProps {
-  message: string;
+interface ErrorComponentProps {
+  error: Error;
 }
 
-export default function ErrorMessage({ message }: ErrorMessageProps) {
+export default function Error({ error }: ErrorComponentProps) {
   return (
     <div className={css.error}>
       <strong>Error</strong>
-      <p>{message}</p>
+      <p>{error.message}</p>
     </div>
   );
 }

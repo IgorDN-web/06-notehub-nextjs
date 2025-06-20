@@ -11,8 +11,16 @@ import { useDebounce } from "use-debounce";
 import NoteModal from "../../components/NoteModal/NoteModal";
 import Loader from "../loading";
 import ErrorMessage from "./error";
+import type { Note } from "@/types/note";
 
-export default function NotesClient() {
+interface NotesClientProps {
+  initialData?: {
+    notes: Note[];
+    totalPages: number;
+  };
+}
+
+export default function NotesClient({ initialData }: NotesClientProps) {
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [debounceQuery] = useDebounce(query, 500);
@@ -22,6 +30,7 @@ export default function NotesClient() {
     queryKey: ["notes", debounceQuery, currentPage],
     queryFn: () => fetchNotes(debounceQuery, currentPage),
     placeholderData: keepPreviousData,
+    initialData,
     refetchOnMount: false,
   });
 
@@ -57,8 +66,7 @@ export default function NotesClient() {
       </div>
 
       {isLoading && <Loader />}
-
-      {isError && <ErrorMessage message={error.message} />}
+      {isError && <ErrorMessage error={error} />}
       {isSuccess && <NoteList notes={notesRequest} />}
       {isModalOpen && <NoteModal onClose={closeModal} />}
     </div>
