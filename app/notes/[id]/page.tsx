@@ -1,18 +1,18 @@
-// app/notes/[id]/page.tsx
-
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import getQueryClient from "@/lib/getQueryClient";
 import { fetchNoteId } from "@/lib/api";
 import NoteDetailsClient from "./NoteDetails.client";
+import { notFound } from "next/navigation";
 
-export default async function Page(
-  props: Promise<{ params: { id: string } }>
-) {
-  const { params } = await props;
+interface PageProps {
+  params: { id: string };
+}
+
+export default async function Page({ params }: PageProps) {
   const noteId = Number(params.id);
 
   if (isNaN(noteId)) {
-    return <p>Invalid note ID</p>;
+    notFound(); // або return <p>Invalid note ID</p>;
   }
 
   const queryClient = getQueryClient();
