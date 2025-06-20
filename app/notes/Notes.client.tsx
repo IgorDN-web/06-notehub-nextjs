@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import NoteModal from "../../components/NoteModal/NoteModal";
 import Loader from "../loading";
-import ErrorMessage from "./error";
+import ErrorMessage from "./ErrorMessage";
 import type { Note } from "@/types/note";
 
 interface NotesClientProps {
