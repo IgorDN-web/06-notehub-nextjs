@@ -3,11 +3,9 @@ import getQueryClient from "@/lib/getQueryClient";
 import { fetchNoteId } from "@/lib/api";
 import NoteDetailsClient from "./NoteDetails.client";
 
-interface PageProps {
-  params: { id: string };
-}
+export default async function Page(props: unknown) {
+  const { params } = props as { params: { id: string } };
 
-export default async function Page({ params }: PageProps) {
   const noteId = Number(params.id);
 
   if (isNaN(noteId)) {
