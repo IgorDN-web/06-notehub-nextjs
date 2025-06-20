@@ -9,23 +9,26 @@ interface NoteDetailsClientProps {
 }
 
 export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
-  const { data, isLoading, isError, error } = useQuery<Note>({
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Note>({
     queryKey: ["note", noteId],
     queryFn: () => fetchNoteId(noteId),
+    refetchOnMount: false, // обов'язково вказати
     staleTime: 1000 * 60 * 5, // 5 хвилин кешування
   });
 
-  if (isLoading) {
-    return <p>Loading note details...</p>;
-  }
+  if (isLoading) return <p>Loading note details...</p>;
 
-  if (isError) {
-    return <p>Error: {error instanceof Error ? error.message : "Unknown error"}</p>;
-  }
+  if (isError)
+    return (
+      <p>Error: {error instanceof Error ? error.message : "Unknown error"}</p>
+    );
 
-  if (!data) {
-    return <p>Note not found</p>;
-  }
+  if (!data) return <p>Note not found</p>;
 
   return (
     <article>
