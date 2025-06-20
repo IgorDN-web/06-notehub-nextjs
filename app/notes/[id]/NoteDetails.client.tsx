@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchNoteId } from "@/lib/api";
 import { Note } from "@/types/note";
-import React from "react";
 
 interface NoteDetailsClientProps {
   noteId: number;
@@ -13,7 +12,7 @@ export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
   const { data, isLoading, isError, error } = useQuery<Note>({
     queryKey: ["note", noteId],
     queryFn: () => fetchNoteId(noteId),
-    staleTime: 1000 * 60 * 5, // 5 минут кеширования
+    staleTime: 1000 * 60 * 5, // 5 хвилин кешування
   });
 
   if (isLoading) {
