@@ -1,40 +1,40 @@
 "use client";
 
-import fetchNoteId from "@/lib/api";
-import Loader from "@/app/loading";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import ErrorMessage from "../error";
-import css from "./NoteDetails.module.css";
+import { fetchNoteId } from "@/lib/api";
+import { Note } from "@/types/note";
+import React from "react";
 
-export default function NoteDetailsClient() {
-  const { id } = useParams<{ id: string }>();
-  const noteId = +id;
-  const {
-    data: note,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["notes", noteId],
+interface NoteDetailsClientProps {
+  noteId: number;
+}
+
+export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
+  const { data, isLoading, isError, error } = useQuery<Note>({
+    queryKey: ["note", noteId],
     queryFn: () => fetchNoteId(noteId),
-    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5, // 5 минут кеширования
   });
 
+  if (isLoading) {
+    return <p>Loading note details...</p>;
+  }
+
+  if (isError) {
+    return <p>Error: {error instanceof Error ? error.message : "Unknown error"}</p>;
+  }
+
+  if (!data) {
+    return <p>Note not found</p>;
+  }
+
   return (
-    <>
-      {isLoading && <Loader />}
-      {isError && !note && <ErrorMessage message={error.message} />}
-      <div className={css.container}>
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{note.title}</h2>
-            <button className={css.editBtn}>Edit note</button>
-          </div>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.date}>Created date: {note.createdAt}</p>
-        </div>
-      </div>
-    </>
+    <article>
+      <h1>{data.title}</h1>
+      <p>{data.content}</p>
+      <p><strong>Tag:</strong> {data.tag}</p>
+      <p><em>Created at: {new Date(data.createdAt).toLocaleString()}</em></p>
+      <p><em>Updated at: {new Date(data.updatedAt).toLocaleString()}</em></p>
+    </article>
   );
 }

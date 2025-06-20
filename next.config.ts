@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true, // (опційно) увімкнено перевірки React у dev
+  reactStrictMode: true,
 };
 
 export default nextConfig;
