@@ -44,7 +44,7 @@ export async function createNote({
   title,
   content,
   tag,
-}: CreateNoteValues): Promise<Note | undefined> {
+}: CreateNoteValues): Promise<Note> {
   try {
     const params: CreateNoteValues = {
       title,
@@ -59,11 +59,14 @@ export async function createNote({
     });
     return res.data;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : String(error));
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Unknown error");
   }
 }
 
-export async function deleteNote(id: number): Promise<Note | undefined> {
+export async function deleteNote(id: number): Promise<Note> {
   try {
     const res = await axios.delete<Note>(`/notes/${id}`, {
       headers: {
@@ -72,12 +75,15 @@ export async function deleteNote(id: number): Promise<Note | undefined> {
     });
     return res.data;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : String(error));
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Unknown error");
   }
 }
 
-// **ВАЖНО** — именованный экспорт функции fetchNoteId
-export async function fetchNoteId(id: number): Promise<Note | undefined> {
+// Именованный экспорт функции fetchNoteId
+export async function fetchNoteId(id: number): Promise<Note> {
   try {
     const res = await axios.get<Note>(`notes/${id}`, {
       headers: {
@@ -86,6 +92,9 @@ export async function fetchNoteId(id: number): Promise<Note | undefined> {
     });
     return res.data;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : String(error));
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Unknown error");
   }
 }
