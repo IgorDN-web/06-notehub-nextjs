@@ -1,16 +1,19 @@
 "use client";
 
-import type { NoteResponse } from "@/lib/api";
+import { useState } from "react";
+import { useDebounce } from "use-debounce";
 import { useQuery } from "@tanstack/react-query";
+
+import type { NoteResponse } from "@/lib/api";
+import { fetchNotes } from "@/lib/api";
+
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteModal from "@/components/NoteModal/NoteModal";
 import Loader from "../loading";
 import ErrorMessage from "./error";
-import { fetchNotes } from "@/lib/api";
-import { useDebounce } from "use-debounce";
-import { useState } from "react";
+
 import css from "./NotePage.module.css";
 
 interface NotesClientProps {
@@ -31,11 +34,9 @@ export default function NotesClient({ initialData }: NotesClientProps) {
     isSuccess,
   } = useQuery<NoteResponse, Error>({
     queryKey: ["notes", debouncedQuery, currentPage],
-    queryFn: async () => {
-      const res = await fetchNotes(debouncedQuery, currentPage);
-      return res ?? { notes: [], totalPages: 1 }; // fallback на undefined
-    },
+    queryFn: () => fetchNotes(debouncedQuery, currentPage),
     initialData,
+    placeholderData: (previousData) => previousData ?? initialData,
     refetchOnMount: false,
   });
 
