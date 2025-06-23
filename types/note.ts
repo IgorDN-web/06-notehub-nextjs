@@ -12,3 +12,9 @@ export interface NotePayload {
   title: string;
   content: string;
 }
+
+// ✅ Добавляем экспорт NoteResponse:
+export interface NoteResponse {
+  data: Note[];
+  total: number;
+}
