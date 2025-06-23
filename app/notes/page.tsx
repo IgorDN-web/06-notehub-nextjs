@@ -4,7 +4,7 @@ import { fetchNotes } from "@/lib/api";
 export const revalidate = 5;
 
 const Notes = async () => {
-  const res = await fetchNotes({});
+  const res = await fetchNotes('', 1); // пустой поиск, первая страница
   return <NotesClient initialData={res} />;
 };
 
