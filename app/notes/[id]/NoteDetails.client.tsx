@@ -16,7 +16,8 @@ export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
     error,
   } = useQuery<Note>({
     queryKey: ["note", noteId],
-    queryFn: () => fetchNoteId(noteId),
+    queryFn: () => fetchNoteId(String(noteId)),
+
     refetchOnMount: false, // обов'язково вказати
     staleTime: 1000 * 60 * 5, // 5 хвилин кешування
   });

@@ -1,100 +1,34 @@
 import axios from "axios";
-import type { Note, CreateNoteValues } from "../types/note";
-import toast from "react-hot-toast";
+import { Note } from "@/types/note";
 
-axios.defaults.baseURL = "https://notehub-public.goit.study/api";
-
-export interface FetchNotesValues {
+export interface NoteResponse {
   notes: Note[];
   totalPages: number;
 }
 
-interface ParamsTypes {
-  page: number;
-  perPage: number;
-  search?: string;
-}
+const API = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://next-docs-api.onrender.com",
+});
 
-export async function fetchNotes(
-  search: string,
-  page: number
-): Promise<FetchNotesValues> {
-  try {
-    const perPage = 12;
-    const params: ParamsTypes = {
-      page,
-      perPage,
-    };
-    if (search?.trim()) {
-      params.search = search;
-    }
-    const res = await axios.get<FetchNotesValues>("/notes", {
-      params,
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
-      },
-    });
-    return res.data;
-  } catch (error) {
-    toast.error(error instanceof Error ? error.message : String(error));
-    throw error; // пробрасываем ошибку дальше
-  }
-}
+// Отримати список нотаток
+export const fetchNotes = async (query: string, page: number): Promise<NoteResponse> => {
+  const res = await API.get(`/notes?query=${query}&page=${page}`);
+  return res.data;
+};
 
-export async function createNote({
-  title,
-  content,
-  tag,
-}: CreateNoteValues): Promise<Note> {
-  try {
-    const params: CreateNoteValues = {
-      title,
-      content,
-      tag,
-    };
+// Отримати одну нотатку по ID
+export const fetchNoteId = async (id: string): Promise<Note> => {
+  const res = await API.get(`/notes/${id}`);
+  return res.data;
+};
 
-    const res = await axios.post<Note>("/notes", params, {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
-      },
-    });
-    return res.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Unknown error");
-  }
-}
+// Створити нову нотатку
+export const createNote = async (note: { title: string; content: string }): Promise<Note> => {
+  const res = await API.post("/notes", note);
+  return res.data;
+};
 
-export async function deleteNote(id: number): Promise<Note> {
-  try {
-    const res = await axios.delete<Note>(`/notes/${id}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
-      },
-    });
-    return res.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Unknown error");
-  }
-}
-
-export async function fetchNoteId(id: number): Promise<Note> {
-  try {
-    const res = await axios.get<Note>(`notes/${id}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
-      },
-    });
-    return res.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Unknown error");
-  }
-}
+// Видалити нотатку
+export const deleteNote = async (id: string): Promise<void> => {
+  await API.delete(`/notes/${id}`);
+};

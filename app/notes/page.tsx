@@ -1,11 +1,14 @@
-import NotesClient from "./Notes.client";
 import { fetchNotes } from "@/lib/api";
+import NotesClient from "./Notes.client";
 
 export const revalidate = 5;
 
-const Notes = async () => {
-  const res = await fetchNotes('', 1); // пустой поиск, первая страница
-  return <NotesClient initialData={res} />;
-};
+export default async function Notes() {
+  try {
+    const res = await fetchNotes('', 1);
+    return <NotesClient initialData={res} />;
+  } catch (_error /* eslint-disable-line @typescript-eslint/no-unused-vars */) {
+    return <NotesClient initialData={{ notes: [], totalPages: 1 }} />;
+  }
+}
 
-export default Notes;

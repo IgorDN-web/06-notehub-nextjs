@@ -10,7 +10,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
-    queryFn: () => fetchNoteId(id),
+    queryFn: () => fetchNoteId(String(id)),
   });
 
   return (

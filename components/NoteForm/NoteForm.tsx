@@ -8,10 +8,10 @@ import toast, { Toaster } from "react-hot-toast";
 
 const validationSchema = Yup.object().shape({
   title: Yup.string()
-    .min(3, "To short!")
-    .max(50, "To long!")
+    .min(3, "Too short!")
+    .max(50, "Too long!")
     .required("Title is required!"),
-  content: Yup.string().max(500),
+  content: Yup.string().max(500), // можно добавить .required() если нужно
   tag: Yup.string()
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required("Tag is required!"),
@@ -19,7 +19,7 @@ const validationSchema = Yup.object().shape({
 
 const initialValues: CreateNoteValues = {
   title: "",
-  content: "",
+  content: "",  // убедитесь, что content обязательный в типе
   tag: "Todo",
 };
 
@@ -45,9 +45,15 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     values: CreateNoteValues,
     actions: FormikHelpers<CreateNoteValues>
   ) {
-    mutationCreate.mutate(values);
+    // Гарантируем, что content — строка (если undefined, то пустая строка)
+    const payload = {
+      ...values,
+      content: values.content ?? "",
+    };
+    mutationCreate.mutate(payload);
     actions.resetForm();
   }
+
   return (
     <>
       <Formik

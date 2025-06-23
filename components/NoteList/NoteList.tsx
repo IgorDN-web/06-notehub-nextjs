@@ -23,8 +23,9 @@ export default function NoteList({ notes }: NoteListProps) {
   });
 
   function handleDelete(noteId: number) {
-    mutationDelete.mutate(noteId);
+    mutationDelete.mutate(noteId.toString());
   }
+  
   return (
     <>
       <ul className={css.list}>
