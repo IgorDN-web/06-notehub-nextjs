@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 axios.defaults.baseURL = "https://notehub-public.goit.study/api";
 
-interface FetchNotesValues {
+export interface FetchNotesValues {
   notes: Note[];
   totalPages: number;
 }
@@ -18,7 +18,7 @@ interface ParamsTypes {
 export async function fetchNotes(
   search: string,
   page: number
-): Promise<FetchNotesValues | undefined> {
+): Promise<FetchNotesValues> {
   try {
     const perPage = 12;
     const params: ParamsTypes = {
@@ -37,6 +37,7 @@ export async function fetchNotes(
     return res.data;
   } catch (error) {
     toast.error(error instanceof Error ? error.message : String(error));
+    throw error; // пробрасываем ошибку дальше
   }
 }
 
@@ -82,7 +83,6 @@ export async function deleteNote(id: number): Promise<Note> {
   }
 }
 
-// Именованный экспорт функции fetchNoteId
 export async function fetchNoteId(id: number): Promise<Note> {
   try {
     const res = await axios.get<Note>(`notes/${id}`, {

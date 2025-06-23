@@ -1,6 +1,6 @@
 "use client";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import NoteList from "../../components/NoteList/NoteList";
 import Pagination from "../../components/Pagination/Pagination";
 import SearchBox from "../../components/SearchBox/SearchBox";
@@ -13,11 +13,13 @@ import Loader from "../loading";
 import ErrorMessage from "./error";
 import type { Note } from "@/types/note";
 
+interface FetchNotesValues {
+  notes: Note[];
+  totalPages: number;
+}
+
 interface NotesClientProps {
-  initialData?: {
-    notes: Note[];
-    totalPages: number;
-  };
+  initialData?: FetchNotesValues;
 }
 
 export default function NotesClient({ initialData }: NotesClientProps) {
@@ -26,11 +28,10 @@ export default function NotesClient({ initialData }: NotesClientProps) {
   const [debounceQuery] = useDebounce(query, 500);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const { data, isLoading, isError, error, isSuccess } = useQuery({
+  const { data, isLoading, isError, error, isSuccess } = useQuery<FetchNotesValues, Error>({
     queryKey: ["notes", debounceQuery, currentPage],
     queryFn: () => fetchNotes(debounceQuery, currentPage),
-    placeholderData: keepPreviousData,
-    initialData,
+    placeholderData: initialData,
     refetchOnMount: false,
   });
 
