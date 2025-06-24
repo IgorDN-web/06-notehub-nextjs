@@ -1,70 +1,104 @@
 "use client";
 
-import { useState } from "react";
-import { useDebounce } from "use-debounce";
-import { useQuery } from "@tanstack/react-query";
-
-import type { NoteResponse } from "@/types/note";
-import { fetchNotes } from "@/lib/api";
-
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import css from "./NotesPage.module.css";
 import NoteList from "@/components/NoteList/NoteList";
+import { fetchNotes } from "@/lib/api";
+import { useEffect, useState } from "react";
 import Pagination from "@/components/Pagination/Pagination";
-import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteModal from "@/components/NoteModal/NoteModal";
-import Loader from "../loading";
-import ErrorMessage from "./error";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import { useDebounce } from "use-debounce";
+import { PropagateLoader } from "react-spinners";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import { Note } from "@/types/note";
 
-import css from "./NotePage.module.css";
+type NotesClientProps = {
+  query: string;
+  page: number;
+  initialData: {
+    notes: Note[];
+    totalPages: number;
+  };
+};
 
-interface NotesClientProps {
-  initialData: NoteResponse;
-}
+export default function NotesClient({
+  query,
+  page,
+  initialData,
+}: NotesClientProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsOpenModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedText] = useDebounce(searchQuery, 300);
 
-export default function NotesClient({ initialData }: NotesClientProps) {
-  const [query, setQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [debouncedQuery] = useDebounce(query, 500);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-  } = useQuery<NoteResponse, Error>({
-    queryKey: ["notes", debouncedQuery, currentPage],
-    queryFn: () => fetchNotes(debouncedQuery, currentPage),
-    initialData,
-    placeholderData: (previousData) => previousData ?? initialData,
-    refetchOnMount: false,
+  const { data, isSuccess, isPending, isError } = useQuery({
+    queryKey: ["notes", debouncedText, currentPage],
+    queryFn: () => fetchNotes(debouncedText, currentPage),
+    placeholderData: keepPreviousData,
+    initialData:
+      debouncedText === query && currentPage === page ? initialData : undefined,
   });
 
-  const handleChange = (newQuery: string) => {
-    setQuery(newQuery);
+  useEffect(() => {
     setCurrentPage(1);
-  };
+  }, [debouncedText]);
+
+  function handleSearchChange(value: string) {
+    setSearchQuery(value);
+  }
+
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+  }
 
   return (
     <div className={css.app}>
-      <div className={css.toolbar}>
-        <SearchBox value={query} onChange={handleChange} />
-        {data.totalPages > 1 && (
+      <header className={css.toolbar}>
+        <SearchBox inputValue={searchQuery} onChange={handleSearchChange} />
+
+        {isSuccess && data.totalPages > 1 && (
           <Pagination
             totalPages={data.totalPages}
+            setPage={handlePageChange}
             currentPage={currentPage}
-            setPage={setCurrentPage}
+            pageRangeDisplayed={5}
+            marginPagesDisplayed={1}
           />
         )}
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+        <button className={css.button} onClick={() => setIsOpenModal(true)}>
           Create note +
         </button>
-      </div>
+      </header>
+      {isError && <ErrorMessage />}
 
-      {isLoading && <Loader />}
-      {isError && <ErrorMessage error={error} />}
-      {isSuccess && <NoteList notes={data.notes} />}
-      {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} />}
+      {isPending && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <PropagateLoader color="#0d6efd" size={11} speedMultiplier={2} />
+        </div>
+      )}
+      {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+
+      {isSuccess && data.notes.length === 0 && (
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "1.2rem",
+            marginTop: "40px",
+            color: "#888",
+          }}
+        >
+          No notes found for this search.
+        </p>
+      )}
+
+      {isModalOpen && <NoteModal onClose={() => setIsOpenModal(false)} />}
     </div>
   );
 }

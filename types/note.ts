@@ -1,20 +1,8 @@
-export type NoteTag = "Work" | "Personal" | "Meeting" | "Shopping" | "Todo";
-
 export interface Note {
-  id: string;
+  id: number;
   title: string;
   content: string;
+  tag: "Work" | "Personal" | "Meeting" | "Shopping" | "Todo";
   createdAt: string;
-  updatedAt?: string;
-}
-
-export interface NotePayload {
-  title: string;
-  content: string;
-}
-
-// ✅ Добавляем экспорт NoteResponse:
-export interface NoteResponse {
-  data: Note[];
-  total: number;
+  updatedAt: string;
 }

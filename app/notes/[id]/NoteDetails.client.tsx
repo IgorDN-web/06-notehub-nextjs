@@ -1,43 +1,75 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { fetchNoteById } from "@/lib/api";
-import { Note } from "@/types/note";
+import css from "./NoteDetails.module.css";
 
-interface NoteDetailsClientProps {
-  noteId: number;
-}
+export default function NoteDetailsClient() {
+  const params = useParams();
+  const idParam = params?.id;
+  const id = Number(idParam);
 
-export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
+  const isValidId = !isNaN(id) && id > 0;
+
   const {
-    data,
+    data: note,
     isLoading,
-    isError,
     error,
-  } = useQuery<Note>({
-    queryKey: ["note", noteId],
-    queryFn: () => fetchNoteById(String(noteId)),
-
-    refetchOnMount: false, // обов'язково вказати
-    staleTime: 1000 * 60 * 5, // 5 хвилин кешування
+    isSuccess,
+    isError,
+  } = useQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+    enabled: isValidId, // виконується лише якщо id валідний
+    refetchOnMount: false,
   });
 
-  if (isLoading) return <p>Loading note details...</p>;
-
-  if (isError)
+  if (!isValidId) {
     return (
-      <p>Error: {error instanceof Error ? error.message : "Unknown error"}</p>
+      <p className={css.errorMessage}>
+        Invalid note ID: <code>{String(idParam)}</code>
+      </p>
     );
+  }
 
-  if (!data) return <p>Note not found</p>;
+  if (isError) throw error;
+
+  const formatDate = (isoDate: string): string => {
+    const date = new Date(isoDate);
+    return date.toLocaleString("uk-UA", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
-    <article>
-      <h1>{data.title}</h1>
-      <p>{data.content}</p>
-      <p><strong>Tag:</strong> {data.tag}</p>
-      <p><em>Created at: {new Date(data.createdAt).toLocaleString()}</em></p>
-      <p><em>Updated at: {new Date(data.updatedAt).toLocaleString()}</em></p>
-    </article>
+    <div>
+      {isLoading && <p className={css.loadMessage}>Loading, please wait...</p>}
+
+      {!error && !note && !isLoading && (
+        <p className={css.errorMessage}>Note not found.</p>
+      )}
+
+      {note && isSuccess && (
+        <div className={css.container}>
+          <div className={css.item}>
+            <div className={css.header}>
+              <h2>{note.title}</h2>
+              <button className={css.editBtn}>Edit note</button>
+            </div>
+            <p className={css.content}>{note.content}</p>
+            <p className={css.date}>
+              {note.updatedAt
+                ? `Updated at: ${formatDate(note.updatedAt)}`
+                : `Created at: ${formatDate(note.createdAt)}`}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

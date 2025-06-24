@@ -1,9 +1,21 @@
 "use client";
 
-interface ErrorProps {
-  error: Error;
-}
+import { useEffect } from "react";
 
-export default function Error({ error }: ErrorProps) {
-  return <p>Could not fetch note details: {error?.message ?? "Unknown error"}</p>;
+type NoteDetailsErrorProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
+export default function NoteDetailsError({ error, reset }: NoteDetailsErrorProps) {
+  useEffect(() => {
+    console.error("Error in /notes/[id] route:", error);
+  }, [error]);
+
+  return (
+    <div>
+      <p>Could not fetch note details. {error.message}</p>
+      <button onClick={reset}>Try again</button>
+    </div>
+  );
 }

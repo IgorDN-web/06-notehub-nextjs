@@ -1,6 +1,6 @@
 import css from "./Footer.module.css";
 
-export default function Footer() {
+const Footer = () => {
   return (
     <footer className={css.footer}>
       <div className={css.content}>
@@ -9,12 +9,12 @@ export default function Footer() {
           <p>Developer: Ihor D</p>
           <p>
             Contact us:
-            <a href="mailto:avtosklokyiv@gmail.com">
-              avtosklokyiv@gmail.com
-            </a>
+            <a href="mailto:avtosklokyiv@gmail.com"> Ihor D</a>
           </p>
         </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

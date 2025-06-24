@@ -1,8 +1,30 @@
-import css from "./NoteList.module.css";
+//lesson
+/**import { Note } from "@/lib/api";
+import NoteItem from "../NoteItem/NoteItem";
+
+type Props = {
+  notes: Note[];
+};
+
+const NoteList = ({ notes }: Props) => {
+  return (
+    <ul>
+      {notes.map((note) => (
+        <NoteItem key={note.id} item={note} />
+      ))}
+    </ul>
+  );
+};
+
+export default NoteList;*/
+//old file
+import cssStyles from "./NoteList.module.css";
 import type { Note } from "../../types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "../../lib/api";
-import toast, { Toaster } from "react-hot-toast";
+import { deleteNote } from "@/lib/api";
+import Loading from "@/app/loading";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import { useState } from "react";
 import Link from "next/link";
 
 interface NoteListProps {
@@ -10,48 +32,54 @@ interface NoteListProps {
 }
 
 export default function NoteList({ notes }: NoteListProps) {
+  const [deletingNoteId, setDeletingNoteId] = useState<Note["id"] | null>(null);
+
   const queryClient = useQueryClient();
-  const mutationDelete = useMutation({
-    mutationFn: deleteNote,
+
+  const mutation = useMutation({
+    mutationFn: async (id: Note["id"]) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Done! The note has been deleted.");
+      setDeletingNoteId(null);
     },
     onError: () => {
-      toast.error("Oops! Something went wrong — the note wasn't deleted.");
+      setDeletingNoteId(null);
     },
   });
 
-  function handleDelete(noteId: number) {
-    mutationDelete.mutate(noteId.toString());
-  }
-  
+  const { isError } = mutation;
+
+  const handleDelete = (id: number) => {
+    setDeletingNoteId(id);
+    mutation.mutate(id);
+  };
+
   return (
     <>
-      <ul className={css.list}>
-        {notes.length > 0 &&
-          notes.map((note) => (
-            <li className={css.listItem} key={note.id}>
-              <h2 className={css.title}>{note.title}</h2>
-              <p className={css.content}>{note.content}</p>
-              <div className={css.footer}>
-                <span className={css.tag}>{note.tag}</span>
-                <Link href={`notes/${note.id}`} className={css.link}>
-                  View details
-                </Link>
+      <ul className={cssStyles.list}>
+        {notes.map((note) => {
+          return (
+            <li className={cssStyles.listItem} key={note.id}>
+              <h2 className={cssStyles.title}>{note.title}</h2>
+              <p className={cssStyles.content}>{note.content}</p>
+              <div className={cssStyles.footer}>
+                <span className={cssStyles.tag}>{note.tag}</span>
+                <Link href={`/notes/${note.id}`} className={cssStyles.link}>View details</Link>
                 <button
-                  className={css.button}
-                  onClick={() => {
-                    handleDelete(note.id);
-                  }}
+                  className={cssStyles.button}
+                  onClick={() => handleDelete(note.id)}
+                  disabled={deletingNoteId === note.id}
                 >
-                  Delete
+                  {deletingNoteId !== note.id ? "Delete" : "In progress"}
+                  {deletingNoteId === note.id && <Loading />}
                 </button>
               </div>
             </li>
-          ))}
+          );
+        })}
       </ul>
-      <Toaster />
+
+      {isError && <ErrorMessage />}
     </>
   );
 }
